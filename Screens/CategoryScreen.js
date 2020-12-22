@@ -9,8 +9,10 @@ import {
   FlatList,
   TouchableHighlight,
   Dimensions,
+  TextInput,
+  ActivityIndicator,
 } from "react-native";
-
+import { Picker } from "@react-native-community/picker";
 const { width, height } = Dimensions.get("window");
 
 const fetchCategories = async () => {
@@ -23,9 +25,11 @@ const fetchCategories = async () => {
     .catch((err) => console.log(err));
 };
 
-const QuizScreen = () => {
-  const [isLoding, setIsLoding] = useState(true);
+const QuizScreen = ({ navigation }) => {
+  const [isLoading, setIsLoding] = useState(true);
   const [categories, setCategories] = useState(null);
+  const [difficultyLevel, setDifficultyLevel] = useState("easy");
+  const [totalQuestions, setTotoalQuestions] = useState(10);
 
   useEffect(
     /// On Componenets Mount
@@ -51,17 +55,26 @@ const QuizScreen = () => {
     }
   );
 
-  if (isLoding) {
+  if (isLoading) {
     return (
       <View style={styles.loadingScreen}>
-        <Text style={{ marginTop: 150 }}>QLoading Question</Text>
-        <Button title="Simulate loading" onPress={() => setIsLoding(true)} />
+        <ActivityIndicator size="large" color="#00ff00" />
       </View>
     );
   }
 
-  const Item = ({ name }) => (
-    <TouchableHighlight onPress={()=>console.log(name)}>
+  const Item = ({ name, id }) => (
+    <TouchableHighlight
+      onPress={() => {
+        console.log(name, id);
+        navigation.navigate("Quiz", {
+          categoryName: name,
+          categoryId: id,
+          numberOfQuestions: totalQuestions,
+          difficulty: difficultyLevel,
+        });
+      }}
+    >
       <Text
         style={{
           padding: 10,
@@ -78,7 +91,7 @@ const QuizScreen = () => {
     </TouchableHighlight>
   );
 
-  const renderItem = ({ item }) => <Item name={item.name} />;
+  const renderItem = ({ item }) => <Item name={item.name} id={item.id} />;
 
   return (
     <SafeAreaView style={styles.QuizScreen}>
@@ -89,6 +102,45 @@ const QuizScreen = () => {
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
       ></FlatList>
+      <View style={styles.bottonView}>
+        <View style={styles.inputContainer}>
+          <Text>Total Questions</Text>
+          <View style={styles.container}>
+            <Picker
+              selectedValue={totalQuestions.toString()}
+              style={{ height: 50, width: 150 }}
+              onValueChange={(itemValue, itemIndex) =>
+                setTotoalQuestions(itemValue)
+              }
+            >
+              <Picker.Item label="5" value="5" />
+              <Picker.Item label="10" value="10" />
+              <Picker.Item label="15" value="15" />
+              <Picker.Item label="20" value="20" />
+              <Picker.Item label="25" value="25" />
+              <Picker.Item label="30" value="30" />
+              <Picker.Item label="40" value="40" />
+              <Picker.Item label="50" value="50" />
+            </Picker>
+          </View>
+        </View>
+        <View style={styles.inputContainer}>
+          <Text>Difficulty</Text>
+          <View style={styles.container}>
+            <Picker
+              selectedValue={difficultyLevel}
+              style={{ height: 50, width: 150 , justifyContent: 'center',}}
+              onValueChange={(itemValue, itemIndex) =>
+                setDifficultyLevel(itemValue)
+              }
+            >
+              <Picker.Item label="Easy" value="easy" />
+              <Picker.Item label="Medium" value="medium" />
+              <Picker.Item label="Hard" value="hard" />
+            </Picker>
+          </View>
+        </View>
+      </View>
     </SafeAreaView>
   );
 };
@@ -96,8 +148,8 @@ const QuizScreen = () => {
 function randColor() {
   var color = (function lol(m, s, c) {
     return s[m.floor(m.random() * s.length)] + (c && lol(m, s, c - 1));
-  })(Math, "6789ABCD", 4);   //add lower number in middle agrument to dark the colors
-//   console.log(color)
+  })(Math, "6789ABCD", 4); //add lower number in middle agrument to dark the colors
+  //   console.log(color)
   return color;
 }
 
@@ -107,7 +159,7 @@ const styles = StyleSheet.create({
   loadingScreen: {
     flex: 1,
     alignItems: "center",
-    justifyContent: "flex-start",
+    justifyContent: "center",
     // backgroundColor: "pink",
   },
   QuizScreen: {
@@ -117,11 +169,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   categoryTitle: {
-    marginTop: 36,
+    // marginTop: 36,
     fontSize: 25,
     paddingVertical: 10,
     fontWeight: "bold",
-    
   },
   item: {
     padding: 10,
@@ -131,5 +182,28 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 20,
     width: width - 50,
+  },
+  bottonView: {
+    flexDirection: "row",
+    height: 100,
+    borderColor: "black",
+    borderWidth: 1,
+    borderRadius: 10,
+  },
+  inputContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    borderColor: "black",
+    borderWidth: 1,
+    padding: 10,
+    margin: 10,
+  },
+  questionInput: {
+      flex: 1,
+    borderColor: "black",
+    borderWidth: 1,
+    fontSize: 22,
+    // width: 150,
+    textAlign: "center",
   },
 });
