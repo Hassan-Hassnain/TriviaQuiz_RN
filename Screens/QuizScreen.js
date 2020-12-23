@@ -3,16 +3,23 @@ import {
   StyleSheet,
   Text,
   View,
-  Button,
-  ScrollView,
   SafeAreaView,
-  FlatList,
   TouchableHighlight,
   Dimensions,
   ActivityIndicator,
+  Alert
 } from "react-native";
 
-const { width, height } = Dimensions.get("window");
+import {
+  WIDTH,
+  HEIGHT,
+  heightReletive,
+  widthReletive,
+  heightPercent,
+  widthPercent,
+  font,
+} from "./ReletiveDimenstion";
+
 
 const QuizScreen = ({ route, navigation }) => {
   const {
@@ -25,11 +32,8 @@ const QuizScreen = ({ route, navigation }) => {
   const [QuestionBank, setQuestionBank] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [index, setIndex] = useState(0);
+  const [score, setScore] = useState(0)
 
-  /*
-  numerOfQuestions: 5,
-          difficulty: easy,
-  */
   useEffect(
     /// On Componenets Mount
     () => {
@@ -76,11 +80,21 @@ const QuizScreen = ({ route, navigation }) => {
   }
 
   const optionTapped = (option) => {
-    console.log(option);
+      if (option === currentQuestion.correctAnswer) {
+        setScore(prevScore => prevScore + 1);
+        console.log(`${score} / ${numberOfQuestions} index ${index}`);
+      }
     if (index < QuestionBank.length - 1) {
       setIndex(index + 1);
     } else {
-      navigation.popToTop();
+      Alert.alert("completed", `Result ${score} %`, [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel",
+        },
+        { text: "Start New Quiz", onPress: () => navigation.popToTop() },
+      ]);
     }
   };
 
@@ -89,8 +103,10 @@ const QuizScreen = ({ route, navigation }) => {
     <SafeAreaView style={styles.QuizScreen}>
       <Text style={styles.categoryTitle}>{currentQuestion.category}</Text>
       <View style={styles.questionContainer}>
-        <Text style={styles.categoryTitle}>Question - </Text>
-        <Text style={styles.categoryTitle}>{index + 1}</Text>
+        <Text style={styles.categoryTitle}>Question</Text>
+        <Text style={styles.categoryTitle}>
+          {index + 1}/{numberOfQuestions}
+        </Text>
       </View>
       <Text style={styles.questionText}>{currentQuestion.question}</Text>
       {currentQuestion.options.map((option) => {
@@ -105,7 +121,7 @@ const QuizScreen = ({ route, navigation }) => {
             }
             onPress={() => optionTapped(`${option}`)}
           >
-            <Text>{option}</Text>
+            <Text style={styles.answerButtonText}>{option}</Text>
           </TouchableHighlight>
         );
       })}
@@ -129,32 +145,40 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   categoryTitle: {
-    marginTop: 36,
-    fontSize: 25,
+    marginTop: 10,
+    fontSize: font(25),
+    textAlign: "left",
     fontWeight: "bold",
   },
-  questionContainer:{
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center'
+  questionContainer: {
+    flex: 0.1,
+    width: WIDTH - 70,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
   questionText: {
-    // width: width - 50,
     padding: 10,
     marginVertical: 5,
     marginHorizontal: 10,
     textAlign: "center",
-    fontSize: 20,
+    fontSize: font(30),
   },
   answerButton: {
+    flex: 0.1,
     padding: 10,
     backgroundColor: `lightblue`,
     margin: 5,
     borderRadius: 10,
     textAlign: "center",
-    fontSize: 23,
+    justifyContent: "center",
+    // fontSize: ,
     fontWeight: "bold",
-    width: width - 50,
+    width: WIDTH - 50,
     height: 50,
+  },
+  answerButtonText: {
+    fontSize: font(30),
+    textAlign: "center",
   },
 });
